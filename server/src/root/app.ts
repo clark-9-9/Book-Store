@@ -3,6 +3,7 @@ dotenv.config();
 
 import express from "express";
 import pg, { Client } from "pg";
+import bcrypt from "bcryptjs";
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -28,21 +29,70 @@ app.get("/users-shared-books", async (req, res) => {
     }
 });
 
-app.post("/create-user", async (req, res) => {
+app.post("/signup", async (req, res) => {
     const { username, email, password } = req.body;
     console.log(username, email, password);
+
+    const salt = await bcrypt.genSalt(10);
+    const hassPassword = await bcrypt.hash(password, salt);
 
     const query = `
         INSERT INTO users (username, email, password)
         VALUES ($1, $2, $3)
     `;
     // Define the actual values for the placeholders
-    const values = [username, email, password];
+    const values = [username, email, hassPassword];
+
+    if (!username || !email || !password) {
+        res.status(400).json({ message: "Missing required fields" });
+        return;
+    }
 
     try {
-        const result = await client.query(query, values);
+        await client.query(query, values);
+        res.status(200).json({ message: "User created successfully" });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Failed to create user", error: err });
+    }
+});
 
-        res.json({ message: "User created successfully" });
+app.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+    const query = `SELECT * FROM users WHERE email ILIKE $1`;
+
+    try {
+        const user = await client.query(query, [email]);
+        console.log(user.rows);
+
+        if (user.rows.length === 0) {
+            res.status(404).json({ message: "User's email not found" });
+            return;
+        }
+
+        if (!email || !password) {
+            res.status(400).json({ message: "Missing required fields" });
+            return;
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(
+            password,
+            user.rows[0].password
+        );
+
+        if (!email || !password) {
+            res.status(400).json({ message: "Missing required fields" });
+            return;
+        }
+
+        if (isPasswordCorrect === false) {
+            res.status(400).json({ message: "Incorrect password" });
+            return;
+        }
+
+        res.status(200).json({
+            message: "Login successful",
+        });
     } catch (err) {
         console.log(err);
         throw err;

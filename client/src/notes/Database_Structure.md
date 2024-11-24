@@ -19,6 +19,7 @@ CREATE TABLE book_collections (
     id TEXT PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     book_id TEXT NOT NULL REFERENCES "amazon-books"(_id) ON DELETE CASCADE
+    collection_name NOT NULL TEXT
 );
 
 -- Rated Books Table (Tracks Ratings by Users)

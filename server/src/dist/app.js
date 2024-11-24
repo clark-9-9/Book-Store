@@ -16,6 +16,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
 const pg_1 = require("pg");
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const app = (0, express_1.default)();
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.json());
@@ -36,18 +37,56 @@ app.get("/users-shared-books", (req, res) => __awaiter(void 0, void 0, void 0, f
         throw err;
     }
 }));
-app.post("/create-user", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, email, password } = req.body;
     console.log(username, email, password);
+    const salt = yield bcryptjs_1.default.genSalt(10);
+    const hassPassword = yield bcryptjs_1.default.hash(password, salt);
     const query = `
         INSERT INTO users (username, email, password)
         VALUES ($1, $2, $3)
     `;
     // Define the actual values for the placeholders
-    const values = [username, email, password];
+    const values = [username, email, hassPassword];
+    if (!username || !email || !password) {
+        res.status(400).json({ message: "Missing required fields" });
+        return;
+    }
     try {
-        const result = yield client.query(query, values);
-        res.json({ message: "User created successfully" });
+        yield client.query(query, values);
+        res.status(200).json({ message: "User created successfully" });
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Failed to create user", error: err });
+    }
+}));
+app.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email, password } = req.body;
+    const query = `SELECT * FROM users WHERE email ILIKE $1`;
+    try {
+        const user = yield client.query(query, [email]);
+        console.log(user.rows);
+        if (user.rows.length === 0) {
+            res.status(404).json({ message: "User's email not found" });
+            return;
+        }
+        if (!email || !password) {
+            res.status(400).json({ message: "Missing required fields" });
+            return;
+        }
+        const isPasswordCorrect = yield bcryptjs_1.default.compare(password, user.rows[0].password);
+        if (!email || !password) {
+            res.status(400).json({ message: "Missing required fields" });
+            return;
+        }
+        if (isPasswordCorrect === false) {
+            res.status(400).json({ message: "Incorrect password" });
+            return;
+        }
+        res.status(200).json({
+            message: "Login successful",
+        });
     }
     catch (err) {
         console.log(err);
