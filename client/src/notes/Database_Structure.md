@@ -1,7 +1,4 @@
 ```sql
-SELECT * FROM "amazon-books";
-
-
 -- Users Table
 CREATE TABLE users (
     id TEXT PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -31,4 +28,20 @@ CREATE TABLE rated_books (
     description TEXT
 );
 
+
+CREATE TABLE "saved_books" (
+	id TEXT PRIMARY KEY REFERENCES "amazon-books"(_id) ON DELETE CASCADE,
+	user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	collection_id TEXT NOT NULL REFERENCES book_collections(id) ON DELETE CASCADE
+);
+
+
+
+CREATE TABLE "saved_books" (
+	id TEXT PRIMARY KEY DEFAULT uuid_generate_v4(),
+    book_id TEXT NOT NULL REFERENCES "amazon-books"(_id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    collection_id TEXT NOT NULL REFERENCES book_collections(id) ON DELETE CASCADE,
+    UNIQUE (user_id, collection_id, book_id)
+);
 ```

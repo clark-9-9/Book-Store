@@ -1,0 +1,101 @@
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+.settings_body {
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #ffffff;
+    display: flex;
+}
+
+.main-content {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-header {
+    text-align: center;
+}
+
+.profile-header img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 1px solid #d3d3d3;
+    background-color: #333;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+.profile-header div {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.profile-header div p:nth-child(2) {
+    opacity: 0.4;
+}
+
+.info-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.info-box {
+    background-color: #1e1e1e;
+    padding: 30px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    min-width: 420px;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.info-box h3 {
+    padding-bottom: 10px;
+    font-weight: bold;
+    border-bottom: 1px solid hsla(0, 0%, 100%, 0.4);
+}
+
+.info-box div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+}
+
+.info-box div p {
+    text-align: left;
+}
+
+.info-box div p:nth-child(1) {
+    width: 30%;
+    opacity: 0.4;
+}
+
+.info-box div p:nth-child(2) {
+    width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.edit {
+    color: rgb(112, 10, 208);
+    cursor: pointer;
+}

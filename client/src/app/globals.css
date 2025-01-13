@@ -2,20 +2,129 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+    /* --background: #ffffff;
+    --foreground: #171717; */
+
+    --background: #171919;
+    --book_container_color: #262b2e;
+    --box_container_color: #1d2021;
+    --blue_color: #5260ff;
+    /* --checkbox_color: #6871f1; */
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+    /* color: var(--foreground); */
+    color: white;
+    background-color: var(--background);
+    font-family: sansation;
+    line-height: normal;
+    /* font-size: 16px; */
+}
+
+.sidebar {
+    background-color: var(--box_container_color);
+}
+
+.sidebar_links a {
+    color: hsla(0, 0%, 100%, 0.5);
+    transition:
+        background ease-in-out 250ms,
+        color ease-in-out 250ms;
+}
+
+.sidebar_links a:hover {
+    background-color: var(--book_container_color);
+    color: hsla(0, 0%, 100%, 1);
+}
+
+.book_component {
+    box-shadow: 0px 8px 30px rgba(0, 0, 0);
+}
+
+.popup_title {
+    opacity: 0;
+    transition: 250ms ease-in-out;
+    translate: 0 20px;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.book_component:hover .popup_title {
+    opacity: 1;
+    translate: 0 0;
+}
+
+.title_text,
+.author_text {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.grid_book_container {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+}
+
+.popup_categories {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    max-width: 750px;
+    width: 100%;
+}
+
+.book_collections_grid_container {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.change_data_popup,
+#add_collection_popup {
+    box-shadow: 0 0 30px rgba(32, 75, 110, 0.4);
+}
+
+.collection {
+    background-color: rgb(38, 43, 46);
+}
+
+.collection:hover {
+    background-color: rgba(49, 54, 58, 1);
+}
+
+.collection div:nth-child(2) p {
+    /* wid */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.collections_popup::-webkit-scrollbar {
+    display: none;
+}
+
+/* --------- Swiper --------- */
+
+.swiper {
+    width: 100%;
+    height: 100%;
+    height: 250px;
+}
+
+.swiper-slide {
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
 }

@@ -14,8 +14,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body>
-                {/* <h1>Shared Text</h1> */}
-                {children}
+                <section>{children}</section>
             </body>
         </html>
     );
