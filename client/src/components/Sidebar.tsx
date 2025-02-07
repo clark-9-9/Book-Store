@@ -44,9 +44,10 @@ function Sidebar() {
         const data = localStorage.getItem("userData");
         setUserData(data);
 
-        if (!data) {
-            router.push("/");
-        }
+        // if no user loged in this causes the main page redirect to homepage
+        // if (!data) {
+        //     router.push("/");
+        // }
     }, [router]);
     return (
         <aside className="sidebar fixed bottom-0 top-0 z-30 w-[220px] px-[15px] py-[32px]">
@@ -61,12 +62,12 @@ function Sidebar() {
                             href={
                                 link.label === "Logout"
                                     ? "/"
-                                    : /* link.label === "Dashboard" || */
-                                      link.label === "Bookmarks" ||
-                                        link.label === "Settings"
-                                      ? !userData
-                                          ? ""
-                                          : link.href || ""
+                                    : ["Bookmarks", "Settings"].includes(
+                                            link.label
+                                        )
+                                      ? userData
+                                          ? link.href || ""
+                                          : ""
                                       : link.href || ""
                             }
                             onClick={() => {
@@ -76,7 +77,6 @@ function Sidebar() {
                                 }
 
                                 if (
-                                    // link.label === "Dashboard" ||
                                     link.label === "Bookmarks" ||
                                     link.label === "Settings"
                                 ) {
@@ -93,14 +93,12 @@ function Sidebar() {
                                     : ""
                             }`}
                         >
-                            {/* {isValidElement(link.icon) ? (
-                                link.icon
-                            ) : (
-                                <Image src={link.icon} alt={link.label} />
-                            )} */}
-
                             {link.icon}
-                            <p>{link.label}</p>
+                            {(() => {
+                                return link.label === "Logout" && !userData
+                                    ? "Go Back"
+                                    : link.label;
+                            })()}
                         </Link>
                     );
                 })}

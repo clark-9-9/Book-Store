@@ -32,7 +32,7 @@ app.get("/users-shared-books", async (req, res) => {
     try {
         const data = await client.query(
             `SELECT * FROM "amazon-books" where published_date >= '2015-01-01'::date order by title LIMIT $1`,
-            [limit ? limit : 500]
+            [limit ? limit : 50000]
         );
 
         res.json({ rowCount: data.rowCount, data: data.rows });
@@ -67,7 +67,7 @@ app.get("/category/:id", async (req, res) => {
 
     try {
         const query = `select * from "amazon-books" where category_name = $1 order by title limit $2`;
-        const data = await client.query(query, [id, limit ? limit : 500]);
+        const data = await client.query(query, [id, limit ? limit : 50000]);
         res.json({ rowCount: data.rowCount, data: data.rows });
     } catch (err) {
         console.log(err);
@@ -197,7 +197,7 @@ app.get("/search-books", async (req, res) => {
     const { searched, limit } = req.query;
 
     try {
-        let data = await client.query(query, [searched, limit ? limit : 500]);
+        let data = await client.query(query, [searched, limit ? limit : 50000]);
         res.json({ rowCount: data.rowCount, data: data.rows });
     } catch (err) {
         console.log(err);
@@ -250,11 +250,13 @@ app.post("/add-collection", async (req, res) => {
 });
 
 app.post("/delete-collection", async (req, res) => {
-    const { userId, collectionId } = req.body;
+    const { userId, collectionsId } = req.body;
     const query = `DELETE FROM "book_collections" WHERE id=$1 AND user_id=$2`;
 
     try {
-        await client.query(query, [collectionId, userId]);
+        for (const collectionId of collectionsId) {
+            await client.query(query, [collectionId, userId]);
+        }
         res.json({ message: "Collection was successfully deleted" });
     } catch (err) {
         res.status(500).json({ message: "Failed to get data", error: err });
@@ -312,8 +314,6 @@ app.post("/get-saved-books", async (req, res) => {
         res.status(500).json({ message: "Failed to get data", error: err });
     }
 });
-
-app.post("/numberof-books-in-collection", async (req, res) => {});
 
 const port = process.env.PORT || 3000;
 function start() {

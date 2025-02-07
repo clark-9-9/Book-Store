@@ -1,7 +1,7 @@
 "use client";
 
 import { CollectionType } from "@/app/types/app";
-import { Box, Modal } from "@mui/material";
+import { Box, Checkbox, Modal } from "@mui/material";
 import { CirclePlus, CircleX, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,8 +13,14 @@ interface NumberOfBooksInCollectionType {
 
 export default function Collections() {
     const [collections, setCollections] = useState<CollectionType[]>([]);
+    const [addCollectionToDelete, setAddCollectionToDelete] = useState<
+        string[]
+    >([]);
+
     const [inputValue, setInputValue] = useState("");
     const [showAddCollectionPopup, setShowAddCollectionPopup] = useState(false);
+    const [showCollectionsPopup, setShowCollectionsPopup] = useState(false);
+
     const [numOfBooksInCollection, setNumOfBooksInCollection] = useState<
         NumberOfBooksInCollectionType[]
     >([]);
@@ -46,6 +52,34 @@ export default function Collections() {
             await response.json();
             setShowAddCollectionPopup(false);
             setInputValue("");
+            window.location.reload();
+        }
+    };
+
+    const handleDeleteCollection = async () => {
+        const userData = localStorage.getItem("userData");
+
+        if (!userData) return;
+
+        const response = await fetch(
+            "http://localhost:8080/delete-collection",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userId: JSON.parse(userData).userId,
+                    collectionsId: addCollectionToDelete,
+                }),
+            }
+        );
+
+        const data = await response.json();
+        if (data.error) {
+            alert(data.error);
+        } else {
+            setShowCollectionsPopup(false);
             window.location.reload();
         }
     };
@@ -141,6 +175,114 @@ export default function Collections() {
                 </Box>
             </Modal>
 
+            <Modal
+                open={showCollectionsPopup}
+                onClose={() => setShowCollectionsPopup(false)}
+            >
+                <Box
+                    sx={{
+                        height: "100%",
+                        width: "100%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <Box
+                        sx={{
+                            padding: "1rem",
+                            backgroundColor: "var(--box_container_color) ",
+                            width: "100%",
+                            maxWidth: "600px",
+                            maxHeight: "400px",
+                            overflowY: "scroll",
+                        }}
+                    >
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between gap-4">
+                                <button
+                                    onClick={handleDeleteCollection}
+                                    className="rounded border-none bg-blue_color px-4 py-2 text-white outline-none"
+                                >
+                                    Save
+                                </button>
+
+                                <X
+                                    size={20}
+                                    color="white"
+                                    className="cursor-pointer"
+                                    onClick={() => {
+                                        setShowCollectionsPopup(false);
+                                        setAddCollectionToDelete([]);
+                                    }}
+                                />
+                            </div>
+                            {collections.map((collection) => {
+                                return (
+                                    <div
+                                        key={collection.id}
+                                        className="flex items-center gap-4"
+                                    >
+                                        <div className="collection flex h-full w-full cursor-pointer gap-4 rounded px-4 py-2 duration-200 ease-in-out">
+                                            <div className="h-[50px] min-w-[50px] truncate rounded bg-white"></div>
+
+                                            <div className="flex w-full items-center">
+                                                <p className="w-full max-w-[140px] font-bold">
+                                                    {collection.collection_name}
+                                                </p>
+                                                {/* <p className="opacity-80">
+                                                    {4}
+                                                </p> */}
+                                            </div>
+                                        </div>
+                                        <Checkbox
+                                            style={{
+                                                color: "var(--blue_color)",
+                                                borderRadius: "4px",
+                                                padding: "4px",
+                                            }}
+                                            onChange={(e) => {
+                                                const checked = (
+                                                    e.target as HTMLInputElement
+                                                ).checked;
+
+                                                if (checked) {
+                                                    setAddCollectionToDelete(
+                                                        (prev) => {
+                                                            if (
+                                                                !prev.includes(
+                                                                    collection.id
+                                                                )
+                                                            ) {
+                                                                return [
+                                                                    ...prev,
+                                                                    collection.id,
+                                                                ];
+                                                            }
+                                                            return prev;
+                                                        }
+                                                    );
+                                                } else {
+                                                    setAddCollectionToDelete(
+                                                        (prev) => {
+                                                            return prev.filter(
+                                                                (id) =>
+                                                                    id !==
+                                                                    collection.id
+                                                            );
+                                                        }
+                                                    );
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </Box>
+                </Box>
+            </Modal>
+
             <article className="h-full w-full rounded-[10px] bg-box_container_color p-4">
                 <div className="flex items-center justify-between">
                     <h3 className="text-2xl font-bold">Book Collections</h3>
@@ -155,7 +297,7 @@ export default function Collections() {
                         </button>
                         <button
                             className="flex items-center justify-center gap-2 rounded border-none bg-red-500 p-2 px-3 outline-none duration-200 ease-in-out hover:opacity-50"
-                            onClick={() => setShowAddCollectionPopup(true)}
+                            onClick={() => setShowCollectionsPopup(true)}
                         >
                             <p>Delete</p>
                             <CircleX />

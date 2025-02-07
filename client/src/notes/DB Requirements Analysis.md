@@ -2,9 +2,12 @@
 
 #### **User Roles** ?
 
+<!--
 - **Admin**:
     - Manage book inventory (add, update, delete books).
     - View all user activities and stats.
+ -->
+
 - **User**:
     - Browse, search, and sort books.
     - Add books to cart and purchase them.
@@ -38,15 +41,13 @@
 
 #### **Book Browsing and Search**
 
-- Search and filter books by:
-    - Price range.
-    - Rating.
-    - Genre.
-    - Author.
-- Sorting options:
-    - Paid.
-    - Free.
-    - Highest Rated.
+- Search and filter books by: - Price range. - Rating. - Genre.
+    <!--
+            - Sorting options:
+            - Paid.
+            - Free.
+            - Highest Rated.
+          -->
 
 #### **Book Management**
 
@@ -58,9 +59,7 @@
 
 #### **User Management**
 
-- Editable profiles:
-    - Change name and password.
-    - Update preferences like preferred genres.
+- Editable profiles: Change name and password.
 - Account deletion and recovery.
 
 ---
@@ -81,9 +80,10 @@
 
 ---
 
-#### **Additional Features**
+<!-- #### **Additional Features**
 
 - Book reviews, in addition to star ratings by user.
+-->
 
 ---
 
@@ -93,7 +93,7 @@
 
 1. **Users Table**:
 
-    - Fields: `id`, `name`, `email`, `password`, `role` (Admin/User), `signup_date`, `profile_picture`, `preferred_genres`.
+    - Fields: `id`, `name`, `email`, `password`.
 
 2. **Books Table (amazon-books)**:
 
@@ -106,6 +106,6 @@
 
     - Fields: `id`, `user_id`, `book_id`, `collection_name`.
 
-4. **Ratings(review) Table**:
+4. **saved_books**:
 
-    - Fields: `id`, `user_id`, `book_id`, `user_rating`, `description`.
+    - Fields: `id`, `user_id`, `book_id`, `collection_id`.

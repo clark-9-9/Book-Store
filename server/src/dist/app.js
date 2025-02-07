@@ -37,7 +37,7 @@ const client = new pg_1.Client({
 app.get("/users-shared-books", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let { limit } = req.query;
     try {
-        const data = yield client.query(`SELECT * FROM "amazon-books" where published_date >= '2015-01-01'::date order by title LIMIT $1`, [limit ? limit : 500]);
+        const data = yield client.query(`SELECT * FROM "amazon-books" where published_date >= '2015-01-01'::date order by title LIMIT $1`, [limit ? limit : 50000]);
         res.json({ rowCount: data.rowCount, data: data.rows });
     }
     catch (err) {
@@ -68,7 +68,7 @@ app.get("/category/:id", (req, res) => __awaiter(void 0, void 0, void 0, functio
     const { limit } = req.query;
     try {
         const query = `select * from "amazon-books" where category_name = $1 order by title limit $2`;
-        const data = yield client.query(query, [id, limit ? limit : 500]);
+        const data = yield client.query(query, [id, limit ? limit : 50000]);
         res.json({ rowCount: data.rowCount, data: data.rows });
     }
     catch (err) {
@@ -174,7 +174,7 @@ app.get("/search-books", (req, res) => __awaiter(void 0, void 0, void 0, functio
     // let query = `SELECT * FROM "amazon-books" WHERE title ILIKE '%' || $1 AND stars >= $2 AND stars <= $3 AND price >= $4 AND price <= $5`;
     const { searched, limit } = req.query;
     try {
-        let data = yield client.query(query, [searched, limit ? limit : 500]);
+        let data = yield client.query(query, [searched, limit ? limit : 50000]);
         res.json({ rowCount: data.rowCount, data: data.rows });
     }
     catch (err) {
@@ -222,10 +222,12 @@ app.post("/add-collection", (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 }));
 app.post("/delete-collection", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId, collectionId } = req.body;
+    const { userId, collectionsId } = req.body;
     const query = `DELETE FROM "book_collections" WHERE id=$1 AND user_id=$2`;
     try {
-        yield client.query(query, [collectionId, userId]);
+        for (const collectionId of collectionsId) {
+            yield client.query(query, [collectionId, userId]);
+        }
         res.json({ message: "Collection was successfully deleted" });
     }
     catch (err) {
@@ -273,7 +275,6 @@ app.post("/get-saved-books", (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.status(500).json({ message: "Failed to get data", error: err });
     }
 }));
-app.post("/numberof-books-in-collection", (req, res) => __awaiter(void 0, void 0, void 0, function* () { }));
 const port = process.env.PORT || 3000;
 function start() {
     try {

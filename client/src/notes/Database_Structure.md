@@ -29,11 +29,11 @@ CREATE TABLE rated_books (
 );
 
 
-CREATE TABLE "saved_books" (
-	id TEXT PRIMARY KEY REFERENCES "amazon-books"(_id) ON DELETE CASCADE,
-	user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-	collection_id TEXT NOT NULL REFERENCES book_collections(id) ON DELETE CASCADE
-);
+-- CREATE TABLE "saved_books" (
+-- 	id TEXT PRIMARY KEY REFERENCES "amazon-books"(_id) ON DELETE CASCADE,
+-- 	user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+-- 	collection_id TEXT NOT NULL REFERENCES book_collections(id) ON DELETE CASCADE
+-- );
 
 
 

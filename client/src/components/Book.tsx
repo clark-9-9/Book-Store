@@ -295,17 +295,19 @@ function Book({ book }: { book: BooksType }) {
                             }
                             className="h-max w-max"
                             onClick={(e) => {
-                                const checked = (e.target as HTMLInputElement)
-                                    .checked;
-                                // console.log(userData?.userId);
-                                // console.log(book._id);
-
-                                // console.log(!checked);
-
-                                if (!checked) {
-                                    setShowCollectionsPopup(false);
+                                if (!userData) {
+                                    alert("Please login to save books");
+                                    return;
                                 } else {
-                                    setShowCollectionsPopup(true);
+                                    const checked = (
+                                        e.target as HTMLInputElement
+                                    ).checked;
+
+                                    if (!checked) {
+                                        setShowCollectionsPopup(false);
+                                    } else {
+                                        setShowCollectionsPopup(true);
+                                    }
                                 }
                             }}
                         />

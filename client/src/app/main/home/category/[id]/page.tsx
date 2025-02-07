@@ -10,7 +10,7 @@ export default function Category() {
     const params = useParams<{ id: string }>();
     const [books, setBooks] = useState<BooksType[]>([]);
     const searchParams = useSearchParams();
-    const limit = searchParams.get("limit") || "1000";
+    const limit = searchParams.get("limit") || "50000";
 
     useEffect(() => {
         const category = categories.find(

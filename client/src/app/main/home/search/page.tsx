@@ -11,12 +11,12 @@ export default function Search() {
 
     const searchParams = useSearchParams();
     const searched = searchParams.get("searched");
-    const limit = searchParams.get("limit");
+    const limit = searchParams.get("limit") || "50000";
 
     useEffect(() => {
         const fetchSearchedBooks = async () => {
             const res = await fetch(
-                `http://localhost:8080/search-books?searched=${searched}&limit=${limit ? limit : ""}`
+                `http://localhost:8080/search-books?searched=${searched}&limit=${limit}`
             );
             const { data }: { data: BooksType[] } = await res.json();
             setBooks(data);
