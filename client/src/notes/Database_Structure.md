@@ -15,18 +15,17 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE book_collections (
     id TEXT PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    book_id TEXT NOT NULL REFERENCES "amazon-books"(_id) ON DELETE CASCADE
     collection_name NOT NULL TEXT
 );
 
 -- Rated Books Table (Tracks Ratings by Users)
-CREATE TABLE rated_books (
-    id TEXT PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    book_id TEXT NOT NULL REFERENCES "amazon-books"(_id) ON DELETE CASCADE,
-    user_rating DOUBLE PRECISION,
-    description TEXT
-);
+-- CREATE TABLE rated_books (
+--     id TEXT PRIMARY KEY DEFAULT uuid_generate_v4(),
+--     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+--     book_id TEXT NOT NULL REFERENCES "amazon-books"(_id) ON DELETE CASCADE,
+--     user_rating DOUBLE PRECISION,
+--     description TEXT
+-- );
 
 
 -- CREATE TABLE "saved_books" (

@@ -247,6 +247,49 @@ app.post("/save-book", (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ message: "Failed to get data", error: err });
     }
 }));
+app.post("/get-saved-book-collections", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userId, bookId } = req.body;
+    try {
+        const query = `SELECT * FROM "saved_books" WHERE user_id = $1 AND book_id = $2`;
+        const result = yield client.query(query, [userId, bookId]);
+        const checkedCollections = [];
+        for (const data of result.rows) {
+            const query2 = `SELECT * FROM "book_collections" WHERE user_id = $1 AND id = $2`;
+            const result2 = yield client.query(query2, [
+                userId,
+                data.collection_id,
+            ]);
+            checkedCollections.push(result2.rows[0]);
+        }
+        res.status(200).json({
+            data: checkedCollections,
+        });
+    }
+    catch (err) {
+        console.error("Error fetching saved book collections:", err);
+        res.status(500).json({
+            message: "Failed to fetch saved book collections",
+            error: err,
+        });
+    }
+}));
+app.post("/remove-book-from-collections", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userId, bookId, collectionsId } = req.body;
+    const query = `DELETE FROM "saved_books" 
+                   WHERE book_id = $1 
+                   AND user_id = $2 
+                   AND collection_id = $3`;
+    console.log(userId, bookId, collectionsId);
+    try {
+        for (const collectionId of collectionsId) {
+            yield client.query(query, [bookId, userId, collectionId]);
+        }
+        res.json({ message: "Book was successfully removed from collections" });
+    }
+    catch (err) {
+        res.status(500).json({ message: "Failed to remove book", error: err });
+    }
+}));
 app.post("/get-collection-saved-books", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, collectionId } = req.body;
     const query = `SELECT * FROM "saved_books" WHERE collection_id=$1 AND user_id=$2`;
@@ -275,6 +318,220 @@ app.post("/get-saved-books", (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.status(500).json({ message: "Failed to get data", error: err });
     }
 }));
+// Get dashboard statistics
+// ----------------------------------------------------------
+app.get("/dashboard/stats", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const stats = yield Promise.all([
+            // Total books
+            client.query('SELECT COUNT(*) FROM "amazon-books"'),
+            // Best sellers count
+            client.query('SELECT COUNT(*) FROM "amazon-books" WHERE is_best_seller = true'),
+            // Average price
+            client.query('SELECT AVG(price) FROM "amazon-books"'),
+            // Books published this year
+            client.query(`SELECT COUNT(*) FROM "amazon-books" 
+                WHERE EXTRACT(YEAR FROM published_date) = EXTRACT(YEAR FROM CURRENT_DATE)`),
+        ]);
+        res.json({
+            totalBooks: parseInt(stats[0].rows[0].count),
+            bestSellers: parseInt(stats[1].rows[0].count),
+            avgPrice: parseFloat(stats[2].rows[0].avg).toFixed(2),
+            newBooks: parseInt(stats[3].rows[0].count),
+        });
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to get statistics",
+            error: err,
+        });
+    }
+}));
+// Get dashboard statistics
+app.get("/dashboard/stats", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const stats = yield Promise.all([
+            // Total books
+            client.query('SELECT COUNT(*) FROM "amazon-books"'),
+            // Best sellers count
+            client.query('SELECT COUNT(*) FROM "amazon-books" WHERE is_best_seller = true'),
+            // Average price
+            client.query('SELECT AVG(price) FROM "amazon-books"'),
+            // Books published this year
+            client.query(`SELECT COUNT(*) FROM "amazon-books" 
+                WHERE EXTRACT(YEAR FROM published_date) = EXTRACT(YEAR FROM CURRENT_DATE)`),
+        ]);
+        res.json({
+            totalBooks: parseInt(stats[0].rows[0].count),
+            bestSellers: parseInt(stats[1].rows[0].count),
+            avgPrice: parseFloat(stats[2].rows[0].avg).toFixed(2),
+            newBooks: parseInt(stats[3].rows[0].count),
+        });
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to get statistics",
+            error: err,
+        });
+    }
+}));
+// Get category distribution
+app.get("/dashboard/categories", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const query = `
+            SELECT category_name, COUNT(*) as count
+            FROM "amazon-books"
+            GROUP BY category_name
+            ORDER BY count DESC
+            LIMIT 5
+        `;
+        const data = yield client.query(query);
+        res.json(data.rows);
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to get category distribution",
+            error: err,
+        });
+    }
+}));
+// Get price trends
+app.get("/dashboard/price-trends", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const query = `
+            SELECT 
+                DATE_TRUNC('month', published_date) as month,
+                AVG(price) as avg_price
+            FROM "amazon-books"
+            WHERE published_date IS NOT NULL
+            GROUP BY month
+            ORDER BY month DESC
+            LIMIT 6
+        `;
+        const data = yield client.query(query);
+        res.json(data.rows);
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to get price trends",
+            error: err,
+        });
+    }
+}));
+// Add these new endpoints
+app.get("/dashboard/extended-stats", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const stats = yield Promise.all([
+            // Existing stats
+            client.query('SELECT COUNT(*) FROM "amazon-books"'),
+            client.query('SELECT COUNT(*) FROM "amazon-books" WHERE is_best_seller = true'),
+            client.query('SELECT AVG(price) FROM "amazon-books"'),
+            client.query(`SELECT COUNT(*) FROM "amazon-books" 
+                WHERE EXTRACT(YEAR FROM published_date) = EXTRACT(YEAR FROM CURRENT_DATE)`),
+            // New stats
+            client.query('SELECT COUNT(DISTINCT author) FROM "amazon-books"'),
+            client.query('SELECT AVG(reviews) FROM "amazon-books"'),
+            client.query('SELECT COUNT(*) FROM "amazon-books" WHERE price < 10'),
+            client.query('SELECT COUNT(*) FROM "amazon-books" WHERE stars >= 4.5'),
+            client.query('SELECT COUNT(*) FROM "amazon-books" WHERE is_kindle_unlimited = true'),
+            client.query('SELECT COUNT(*) FROM "amazon-books" WHERE is_editors_pick = true'),
+        ]);
+        res.json({
+            totalBooks: parseInt(stats[0].rows[0].count),
+            bestSellers: parseInt(stats[1].rows[0].count),
+            avgPrice: parseFloat(stats[2].rows[0].avg).toFixed(2),
+            newBooks: parseInt(stats[3].rows[0].count),
+            uniqueAuthors: parseInt(stats[4].rows[0].count),
+            avgReviews: parseFloat(stats[5].rows[0].avg).toFixed(0),
+            affordableBooks: parseInt(stats[6].rows[0].count),
+            highlyRated: parseInt(stats[7].rows[0].count),
+            kindleUnlimited: parseInt(stats[8].rows[0].count),
+            editorsPicks: parseInt(stats[9].rows[0].count),
+        });
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to get statistics",
+            error: err,
+        });
+    }
+}));
+// Add endpoint for ratings distribution over time
+app.get("/dashboard/ratings-trend", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const query = `
+            SELECT 
+                DATE_TRUNC('month', published_date) as month,
+                AVG(stars) as avg_rating,
+                COUNT(*) as book_count
+            FROM "amazon-books"
+            WHERE published_date IS NOT NULL
+            GROUP BY month
+            ORDER BY month DESC
+            LIMIT 12
+        `;
+        const data = yield client.query(query);
+        res.json(data.rows);
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to get ratings trend",
+            error: err,
+        });
+    }
+}));
+// Add these new endpoints for complex visualizations
+app.get("/dashboard/book-distribution", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const query = `
+            SELECT 
+                category_name,
+                COUNT(*) as count,
+                AVG(price) as avg_price,
+                AVG(stars) as avg_rating,
+                COUNT(CASE WHEN is_best_seller THEN 1 END) as bestseller_count
+            FROM "amazon-books"
+            GROUP BY category_name
+            ORDER BY count DESC
+        `;
+        const data = yield client.query(query);
+        res.json(data.rows);
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to get book distribution",
+            error: err,
+        });
+    }
+}));
+app.get("/dashboard/monthly-stats", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const query = `
+            SELECT 
+                DATE_TRUNC('month', published_date) as month,
+                category_name,
+                COUNT(*) as book_count,
+                AVG(price) as avg_price,
+                AVG(stars) as avg_rating,
+                COUNT(CASE WHEN is_best_seller THEN 1 END) as bestseller_count,
+                COUNT(CASE WHEN is_kindle_unlimited THEN 1 END) as kindle_count
+            FROM "amazon-books"
+            WHERE published_date IS NOT NULL
+            GROUP BY DATE_TRUNC('month', published_date), category_name
+            ORDER BY month DESC
+            LIMIT 500
+        `;
+        const data = yield client.query(query);
+        res.json(data.rows);
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to get monthly stats",
+            error: err,
+        });
+    }
+}));
+// --------------------------------------------
 const port = process.env.PORT || 3000;
 function start() {
     try {

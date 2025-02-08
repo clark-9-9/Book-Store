@@ -16,14 +16,22 @@ function Book({ book }: { book: BooksType }) {
     const [userData, setUserData] = useState<UserDataType | null>(null);
 
     const [isBookSaved, setIsBookSaved] = useState<boolean>(false);
-    const [showCollectionsPopup, setShowCollectionsPopup] = useState(false);
+    const [showCollectionsPopup, setShowCollectionsPopup] =
+        useState<boolean>(false);
+    const [showCheckedCollectionsPopup, setShowCheckedCollectionsPopup] =
+        useState<boolean>(false);
+
     const [reload, setReload] = useState(false);
     const [clickSaveBook, setClickSaveBook] = useState(false);
     const [savedBooks, setSavedBooks] = useState<SavedBooksType[]>([]);
 
     const [collections, setCollections] = useState<CollectionType[]>([]);
+    const [getCheckedCollections, setGetCheckedCollections] = useState<
+        CollectionType[]
+    >([]);
     const [addBookToCheckedCollection, setAddBookToCheckedCollection] =
         useState<string[]>([]);
+    const [addCheckedCollection, setCheckedCollection] = useState<string[]>([]);
 
     const handleAddBookToCollection = async () => {
         const response = await fetch("http://localhost:8080/save-book", {
@@ -45,6 +53,48 @@ function Book({ book }: { book: BooksType }) {
             setReload(true);
             setShowCollectionsPopup(false);
             setClickSaveBook(true);
+            handleGetSavedBookCollections();
+        }
+    };
+
+    const handleRemoveBookToCollection = async () => {
+        const response = await fetch(
+            "http://localhost:8080/remove-book-from-collections",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userId: userData?.userId,
+                    collectionsId: addCheckedCollection,
+                    bookId: book._id,
+                }),
+            }
+        );
+
+        const data = await response.json();
+        if (data.error) {
+            alert(data.error);
+        } else {
+            setReload(true);
+            setShowCheckedCollectionsPopup(false);
+            handleGetSavedBookCollections();
+
+            // Check if the book is completely removed from all collections
+            const updatedSavedBooks = savedBooks.filter(
+                (savedBook) =>
+                    savedBook.book_id !== book._id ||
+                    !addCheckedCollection.includes(savedBook.collection_id)
+            );
+            setSavedBooks(updatedSavedBooks);
+
+            // Update isBookSaved based on whether the book exists in any collection
+            const bookStillExists = updatedSavedBooks.some(
+                (savedBook) => savedBook.book_id === book._id
+            );
+            setIsBookSaved(bookStillExists);
+            setClickSaveBook(bookStillExists);
         }
     };
 
@@ -59,6 +109,7 @@ function Book({ book }: { book: BooksType }) {
         setUserData(JSON.parse(data!));
     }, []);
 
+    // fetch books in a collection
     useEffect(() => {
         const userData = localStorage.getItem("userData");
 
@@ -86,14 +137,42 @@ function Book({ book }: { book: BooksType }) {
         }
     }, []);
 
-    useEffect(
-        () => {
-            const userData = localStorage.getItem("userData");
+    // get collections
+    useEffect(() => {
+        const userData = localStorage.getItem("userData");
 
-            if (userData) {
-                const getCollections = async () => {
+        if (userData) {
+            const getCollections = async () => {
+                const response = await fetch(
+                    "http://localhost:8080/get-collections",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            userId: JSON.parse(userData).userId,
+                        }),
+                    }
+                );
+
+                const { data }: { data: CollectionType[] } =
+                    await response.json();
+                setCollections(data);
+            };
+            getCollections();
+        }
+    }, []);
+
+    // get-saved-book-collections
+    const handleGetSavedBookCollections = () => {
+        const userData = localStorage.getItem("userData");
+
+        if (userData) {
+            const getSavedBookCollections = async () => {
+                try {
                     const response = await fetch(
-                        "http://localhost:8080/get-collections",
+                        "http://localhost:8080/get-saved-book-collections",
                         {
                             method: "POST",
                             headers: {
@@ -101,22 +180,35 @@ function Book({ book }: { book: BooksType }) {
                             },
                             body: JSON.stringify({
                                 userId: JSON.parse(userData).userId,
+                                bookId: book._id,
                             }),
                         }
                     );
 
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`
+                        );
+                    }
+
                     const { data }: { data: CollectionType[] } =
                         await response.json();
-                    setCollections(data);
-                };
-                getCollections();
-            }
-        },
-        [
-            /* showCollectionsPopup */
-        ]
-    );
+                    setGetCheckedCollections(data);
+                } catch (error) {
+                    console.error(
+                        "Error fetching saved book collections:",
+                        error
+                    );
+                }
+            };
 
+            getSavedBookCollections();
+        }
+    };
+
+    useEffect(() => {
+        handleGetSavedBookCollections();
+    }, []);
     // is Booked Saved
     useEffect(() => {
         const checkIfBookIsSaved = () => {
@@ -160,7 +252,15 @@ function Book({ book }: { book: BooksType }) {
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center justify-between gap-4">
                                 <button
-                                    onClick={handleAddBookToCollection}
+                                    onClick={() => {
+                                        if (collections.length === 0) {
+                                            alert(
+                                                "Please create a collection first"
+                                            );
+                                        } else {
+                                            handleAddBookToCollection();
+                                        }
+                                    }}
                                     className="rounded border-none bg-blue_color px-4 py-2 text-white outline-none"
                                 >
                                     Save
@@ -176,67 +276,185 @@ function Book({ book }: { book: BooksType }) {
                                     }}
                                 />
                             </div>
-                            {collections.map((collection) => {
-                                return (
-                                    <div
-                                        key={collection.id}
-                                        className="flex items-center gap-4"
-                                    >
-                                        <div className="collection flex h-full w-full cursor-pointer gap-4 rounded px-4 py-2 duration-200 ease-in-out">
-                                            <div className="h-[50px] min-w-[50px] truncate rounded bg-white"></div>
+                            {collections.length !== 0 &&
+                                collections.map((collection) => {
+                                    return (
+                                        <div
+                                            key={collection.id}
+                                            className="flex items-center gap-4"
+                                        >
+                                            <div className="collection flex h-full w-full cursor-pointer gap-4 rounded px-4 py-2 duration-200 ease-in-out">
+                                                <div className="h-[50px] min-w-[50px] truncate rounded bg-white"></div>
 
-                                            <div className="flex w-full items-center">
-                                                <p className="w-full max-w-[140px] font-bold">
-                                                    {collection.collection_name}
-                                                </p>
-                                                {/* <p className="opacity-80">
-                                                    {4}
-                                                </p> */}
+                                                <div className="flex w-full items-center">
+                                                    <p className="w-full max-w-[140px] font-bold">
+                                                        {
+                                                            collection.collection_name
+                                                        }
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <Checkbox
-                                            style={{
-                                                color: "var(--blue_color)",
-                                                borderRadius: "4px",
-                                                padding: "4px",
-                                            }}
-                                            onChange={(e) => {
-                                                const checked = (
-                                                    e.target as HTMLInputElement
-                                                ).checked;
+                                            <Checkbox
+                                                style={{
+                                                    color: "var(--blue_color)",
+                                                    borderRadius: "4px",
+                                                    padding: "4px",
+                                                }}
+                                                onChange={(e) => {
+                                                    const checked = (
+                                                        e.target as HTMLInputElement
+                                                    ).checked;
 
-                                                if (checked) {
-                                                    setAddBookToCheckedCollection(
-                                                        (prev) => {
-                                                            if (
-                                                                !prev.includes(
-                                                                    collection.id
-                                                                )
-                                                            ) {
-                                                                return [
-                                                                    ...prev,
-                                                                    collection.id,
-                                                                ];
+                                                    if (checked) {
+                                                        setAddBookToCheckedCollection(
+                                                            (prev) => {
+                                                                if (
+                                                                    !prev.includes(
+                                                                        collection.id
+                                                                    )
+                                                                ) {
+                                                                    return [
+                                                                        ...prev,
+                                                                        collection.id,
+                                                                    ];
+                                                                }
+                                                                return prev;
                                                             }
-                                                            return prev;
+                                                        );
+                                                    } else {
+                                                        setAddBookToCheckedCollection(
+                                                            (prev) => {
+                                                                return prev.filter(
+                                                                    (id) =>
+                                                                        id !==
+                                                                        collection.id
+                                                                );
+                                                            }
+                                                        );
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    </Box>
+                </Box>
+            </Modal>
+
+            <Modal
+                open={showCheckedCollectionsPopup}
+                onClose={() => setShowCheckedCollectionsPopup(false)}
+            >
+                <Box
+                    sx={{
+                        height: "100%",
+                        width: "100%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <Box
+                        sx={{
+                            padding: "1rem",
+                            backgroundColor: "var(--box_container_color) ",
+                            width: "100%",
+                            maxWidth: "600px",
+                            maxHeight: "400px",
+                            overflowY: "scroll",
+                        }}
+                    >
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between gap-4">
+                                <button
+                                    onClick={() => {
+                                        if (
+                                            getCheckedCollections.length === 0
+                                        ) {
+                                            alert(
+                                                "Please create a collection first"
+                                            );
+                                        } else {
+                                            handleRemoveBookToCollection();
+                                        }
+                                    }}
+                                    className="rounded border-none bg-blue_color px-4 py-2 text-white outline-none"
+                                >
+                                    Save
+                                </button>
+
+                                <X
+                                    size={20}
+                                    color="white"
+                                    className="cursor-pointer"
+                                    onClick={() => {
+                                        setShowCheckedCollectionsPopup(false);
+                                        setAddBookToCheckedCollection([]);
+                                    }}
+                                />
+                            </div>
+                            {getCheckedCollections.length !== 0 &&
+                                getCheckedCollections.map((collection) => {
+                                    return (
+                                        <div
+                                            key={collection.id}
+                                            className="flex items-center gap-4"
+                                        >
+                                            <div className="collection flex h-full w-full cursor-pointer gap-4 rounded px-4 py-2 duration-200 ease-in-out">
+                                                <div className="h-[50px] min-w-[50px] truncate rounded bg-white"></div>
+
+                                                <div className="flex w-full items-center">
+                                                    <p className="w-full max-w-[140px] font-bold">
+                                                        {
+                                                            collection.collection_name
                                                         }
-                                                    );
-                                                } else {
-                                                    setAddBookToCheckedCollection(
-                                                        (prev) => {
-                                                            return prev.filter(
-                                                                (id) =>
-                                                                    id !==
-                                                                    collection.id
-                                                            );
-                                                        }
-                                                    );
-                                                }
-                                            }}
-                                        />
-                                    </div>
-                                );
-                            })}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Checkbox
+                                                style={{
+                                                    color: "var(--blue_color)",
+                                                    borderRadius: "4px",
+                                                    padding: "4px",
+                                                }}
+                                                onChange={(e) => {
+                                                    const checked = (
+                                                        e.target as HTMLInputElement
+                                                    ).checked;
+
+                                                    if (checked) {
+                                                        setCheckedCollection(
+                                                            (prev) => {
+                                                                if (
+                                                                    !prev.includes(
+                                                                        collection.id
+                                                                    )
+                                                                ) {
+                                                                    return [
+                                                                        ...prev,
+                                                                        collection.id,
+                                                                    ];
+                                                                }
+                                                                return prev;
+                                                            }
+                                                        );
+                                                    } else {
+                                                        setCheckedCollection(
+                                                            (prev) => {
+                                                                return prev.filter(
+                                                                    (id) =>
+                                                                        id !==
+                                                                        collection.id
+                                                                );
+                                                            }
+                                                        );
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    );
+                                })}
                         </div>
                     </Box>
                 </Box>
@@ -305,8 +523,10 @@ function Book({ book }: { book: BooksType }) {
 
                                     if (!checked) {
                                         setShowCollectionsPopup(false);
+                                        setShowCheckedCollectionsPopup(true);
                                     } else {
                                         setShowCollectionsPopup(true);
+                                        setShowCheckedCollectionsPopup(false);
                                     }
                                 }
                             }}
