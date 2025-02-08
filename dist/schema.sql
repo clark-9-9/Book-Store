@@ -1,3 +1,7 @@
+-- Create database
+CREATE DATABASE blog_app;
+
+USE blog_app;
 
 -- Users table
 CREATE TABLE users (
