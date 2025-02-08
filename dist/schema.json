@@ -1,0 +1,344 @@
+{
+  "tables": {
+    "amazon_books": {
+      "name": "amazon_books",
+      "columns": {
+        "_id": {
+          "name": "_id",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "comment": null
+        },
+        "asin": {
+          "name": "asin",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "sold_by": {
+          "name": "sold_by",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "img_url": {
+          "name": "img_url",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "product_url": {
+          "name": "product_url",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "stars": {
+          "name": "stars",
+          "type": "float8",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "reviews": {
+          "name": "reviews",
+          "type": "int4",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "price": {
+          "name": "price",
+          "type": "float8",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "is_kindle_unlimited": {
+          "name": "is_kindle_unlimited",
+          "type": "bool",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "int4",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "is_best_seller": {
+          "name": "is_best_seller",
+          "type": "bool",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "is_editors_pick": {
+          "name": "is_editors_pick",
+          "type": "bool",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "is_good_reads_choice": {
+          "name": "is_good_reads_choice",
+          "type": "bool",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "published_date": {
+          "name": "published_date",
+          "type": "date",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        },
+        "category_name": {
+          "name": "category_name",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indices": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "comment": null
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "comment": null
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": true,
+          "notNull": true,
+          "comment": null
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indices": {}
+    },
+    "book_collections": {
+      "name": "book_collections",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "comment": null
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        },
+        "collection_name": {
+          "name": "collection_name",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indices": {}
+    },
+    "saved_books": {
+      "name": "saved_books",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": true,
+          "unique": true,
+          "notNull": true,
+          "comment": null
+        },
+        "book_id": {
+          "name": "book_id",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        },
+        "collection_id": {
+          "name": "collection_id",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "comment": null
+        }
+      },
+      "comment": null,
+      "indices": {}
+    }
+  },
+  "relationships": {
+    "users_id_to_book_collections_user_id": {
+      "name": "users_id_to_book_collections_user_id",
+      "primaryTableName": "users",
+      "primaryColumnName": "id",
+      "foreignTableName": "book_collections",
+      "foreignColumnName": "user_id",
+      "cardinality": "ONE_TO_MANY",
+      "updateConstraint": "NO_ACTION",
+      "deleteConstraint": "CASCADE"
+    },
+    "users_id_to_saved_books_user_id": {
+      "name": "users_id_to_saved_books_user_id",
+      "primaryTableName": "users",
+      "primaryColumnName": "id",
+      "foreignTableName": "saved_books",
+      "foreignColumnName": "user_id",
+      "cardinality": "ONE_TO_MANY",
+      "updateConstraint": "NO_ACTION",
+      "deleteConstraint": "CASCADE"
+    },
+    "book_collections_id_to_saved_books_collection_id": {
+      "name": "book_collections_id_to_saved_books_collection_id",
+      "primaryTableName": "book_collections",
+      "primaryColumnName": "id",
+      "foreignTableName": "saved_books",
+      "foreignColumnName": "collection_id",
+      "cardinality": "ONE_TO_MANY",
+      "updateConstraint": "NO_ACTION",
+      "deleteConstraint": "CASCADE"
+    }
+  }
+}
