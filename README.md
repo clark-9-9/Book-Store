@@ -2,7 +2,7 @@
 
 ---
 
-![alt text](schema/tables.png)
+![alt text](db/tables.png)
 
 ---
 
