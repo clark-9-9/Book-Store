@@ -19,14 +19,14 @@
 
 -   this tables contains all saved books by user
 -   we retieve books for specific user using specified the user_id of current user that loged into the database and the collection_id where the book saved in
--   references by 3 tables (saved_books, book_collections, amazon_books)
--   reference properties are for book_id in amazon_books, user_id in users and collection_id in book_collections
+-   references to 3 tables (saved_books, book_collections, amazon_books)
+-   reference properties are for book_id in amazon_books, user_id in users and collection_id in book_collections table
 
 ### Table: book_collections
 
 -   finally this one contains all collections of user
 -   a collection contains many books
--   reference properties are only user_id in users
+-   reference to only user_id in users table
 
 ---
 
