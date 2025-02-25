@@ -66,7 +66,11 @@ export default function Settings() {
     return (
         <div className="settings_body relative ml-[220px] flex flex-col justify-center">
             <div
-                className={`change_data_popup absolute left-[50%] top-[50%] z-[25] flex h-[200px] translate-x-[-50%] translate-y-[-50%] items-center justify-center gap-2 rounded bg-box_container_color p-4 duration-200 ease-in-out ${showChangePopup ? "opacity-1 visible" : "invisible opacity-0"} `}
+                className={`change_data_popup animate__animated fixed inset-0 z-[25] m-auto flex h-[200px] w-fit items-center justify-center gap-2 rounded bg-box_container_color p-4 duration-200 ease-in-out ${
+                    showChangePopup
+                        ? "animate__fadeInDown opacity-1 visible"
+                        : "invisible opacity-0"
+                }`}
             >
                 <X
                     size={20}

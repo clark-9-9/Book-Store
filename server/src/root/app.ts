@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
-import pg, { Client } from "pg";
+import { Client } from "pg";
 import bcrypt from "bcryptjs";
 import cors from "cors";
 import { BooksType, UserDataType } from "./types/app";
@@ -18,6 +18,35 @@ app.use(
     })
 );
 
+/* 
++ Supabase Connewction
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const connectionString = `postgresql://postgres.cjlnebkdlfhfvazmszqe:${process.env.SUPABASE_PASSWORD}@aws-0-eu-west-2.pooler.supabase.com:6543/postgres`;
+
+const client = new Client({
+    connectionString: connectionString,
+    ssl: { rejectUnauthorized: false }, // Required for Supabase
+});
+
+
+app.get("/supabase", async (req, res) => {
+    try {
+        const { data, error: tablesError } = await supabase
+            .from("users")
+            .select("*");
+
+        console.log("Connection successful:", data);
+        res.json({ data });
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).json({ error: err });
+    }
+});
+ */
+
 const client = new Client({
     host: "localhost",
     port: 5432,
@@ -32,7 +61,8 @@ app.get("/users-shared-books", async (req, res) => {
     try {
         const data = await client.query(
             `SELECT * FROM "amazon-books" where published_date >= '2015-01-01'::date order by title LIMIT $1`,
-            [limit ? limit : 50000]
+            [limit ? limit : 500]
+            // [limit ? limit : 50000]
         );
 
         res.json({ rowCount: data.rowCount, data: data.rows });
@@ -49,7 +79,7 @@ app.get("/best-seller", async (req, res) => {
             from "amazon-books"  
             where is_best_seller = true 
             and published_date >= '2010-01-01'::date 
-            order by stars DESC, title ASC 
+            order by stars DESC, title ASC  
             limit 50
         `;
         const data = await client.query(query);
@@ -366,35 +396,35 @@ app.post("/get-saved-books", async (req, res) => {
 // Get dashboard statistics
 
 // ----------------------------------------------------------
-app.get("/dashboard/stats", async (req, res) => {
-    try {
-        const stats = await Promise.all([
-            // Total books
-            client.query('SELECT COUNT(*) FROM "amazon-books"'),
-            // Best sellers count
-            client.query(
-                'SELECT COUNT(*) FROM "amazon-books" WHERE is_best_seller = true'
-            ),
-            // Average price
-            client.query('SELECT AVG(price) FROM "amazon-books"'),
-            // Books published this year
-            client.query(`SELECT COUNT(*) FROM "amazon-books" 
-                WHERE EXTRACT(YEAR FROM published_date) = EXTRACT(YEAR FROM CURRENT_DATE)`),
-        ]);
+// app.get("/dashboard/stats", async (req, res) => {
+//     try {
+//         const stats = await Promise.all([
+//             // Total books
+//             client.query('SELECT COUNT(*) FROM "amazon-books"'),
+//             // Best sellers count
+//             client.query(
+//                 'SELECT COUNT(*) FROM "amazon-books" WHERE is_best_seller = true'
+//             ),
+//             // Average price
+//             client.query('SELECT AVG(price) FROM "amazon-books"'),
+//             // Books published this year
+//             client.query(`SELECT COUNT(*) FROM "amazon-books"
+//                 WHERE EXTRACT(YEAR FROM published_date) = EXTRACT(YEAR FROM CURRENT_DATE)`),
+//         ]);
 
-        res.json({
-            totalBooks: parseInt(stats[0].rows[0].count),
-            bestSellers: parseInt(stats[1].rows[0].count),
-            avgPrice: parseFloat(stats[2].rows[0].avg).toFixed(2),
-            newBooks: parseInt(stats[3].rows[0].count),
-        });
-    } catch (err) {
-        res.status(500).json({
-            message: "Failed to get statistics",
-            error: err,
-        });
-    }
-});
+//         res.json({
+//             totalBooks: parseInt(stats[0].rows[0].count),
+//             bestSellers: parseInt(stats[1].rows[0].count),
+//             avgPrice: parseFloat(stats[2].rows[0].avg).toFixed(2),
+//             newBooks: parseInt(stats[3].rows[0].count),
+//         });
+//     } catch (err) {
+//         res.status(500).json({
+//             message: "Failed to get statistics",
+//             error: err,
+//         });
+//     }
+// });
 
 // Get dashboard statistics
 app.get("/dashboard/stats", async (req, res) => {

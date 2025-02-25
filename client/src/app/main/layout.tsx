@@ -1,5 +1,6 @@
 import Sidebar from "@/components/Sidebar";
 import "../globals.css";
+import "animate.css";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (

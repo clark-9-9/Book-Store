@@ -12,6 +12,8 @@ interface NumberOfBooksInCollectionType {
 }
 
 export default function Collections() {
+    const router = useRouter();
+
     const [collections, setCollections] = useState<CollectionType[]>([]);
     const [addCollectionToDelete, setAddCollectionToDelete] = useState<
         string[]
@@ -24,7 +26,6 @@ export default function Collections() {
     const [numOfBooksInCollection, setNumOfBooksInCollection] = useState<
         NumberOfBooksInCollectionType[]
     >([]);
-    const router = useRouter();
 
     useEffect(() => {
         const userData = localStorage.getItem("userData");
@@ -117,9 +118,11 @@ export default function Collections() {
 
     return (
         <section className="relative ml-[220px] flex h-[100vh] flex-col items-center justify-center p-4">
+            {/* Add Collection Modal */}
             <Modal
                 open={showAddCollectionPopup}
                 onClose={() => setShowAddCollectionPopup(false)}
+                className="animate__animated animate__backInDown"
             >
                 <Box
                     sx={{
@@ -175,9 +178,11 @@ export default function Collections() {
                 </Box>
             </Modal>
 
+            {/* Delete Collection Modal */}
             <Modal
                 open={showCollectionsPopup}
                 onClose={() => setShowCollectionsPopup(false)}
+                className="animate__animated animate__backInDown"
             >
                 <Box
                     sx={{
@@ -230,9 +235,6 @@ export default function Collections() {
                                                 <p className="w-full max-w-[140px] font-bold">
                                                     {collection.collection_name}
                                                 </p>
-                                                {/* <p className="opacity-80">
-                                                    {4}
-                                                </p> */}
                                             </div>
                                         </div>
                                         <Checkbox

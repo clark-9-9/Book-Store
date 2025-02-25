@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "animate.css";
 
 export const metadata: Metadata = {
     title: "Book Store",

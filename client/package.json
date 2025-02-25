@@ -16,6 +16,7 @@
         "@mui/styled-engine-sc": "^6.2.0",
         "@observablehq/plot": "^0.6.16",
         "@types/d3": "^7.4.3",
+        "animate.css": "^4.1.1",
         "chart.js": "^4.4.7",
         "client": "file:",
         "d3": "^7.9.0",

@@ -84,7 +84,7 @@ export default function Home() {
                     </div>
 
                     <div
-                        className={`popup_categories absolute left-0 top-12 z-20 bg-book_container_color p-4 transition duration-300 ease-in-out ${showCategoriesPopup ? "opacity-1 visible" : "invisible opacity-0"} `}
+                        className={`popup_categories animate__animated absolute left-0 top-12 z-20 bg-book_container_color p-4 transition duration-300 ease-in-out ${showCategoriesPopup ? "animate__fadeInDown opacity-1 visible" : "animate__fadeOut invisible opacity-0"} `}
                     >
                         {categories.map((category, i) => {
                             return (

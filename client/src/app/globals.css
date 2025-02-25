@@ -18,6 +18,7 @@
     --book_container_color: #262b2e;
     --box_container_color: #1d2021;
     --blue_color: #5260ff;
+
     /* --checkbox_color: #6871f1; */
 }
 
@@ -127,4 +128,30 @@ body {
     justify-content: center;
     align-items: center;
     gap: 20px;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--box_container_color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--book_container_color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #2d3235;
+}
+
+/* Firefox */
+* {
+    /* scrollbar-width: thin; */
+    scrollbar-color: var(--book_container_color) var(--box_container_color);
 }

@@ -27,6 +27,34 @@ app.use((0, cors_1.default)({
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
+/*
++ Supabase Connewction
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const connectionString = `postgresql://postgres.cjlnebkdlfhfvazmszqe:${process.env.SUPABASE_PASSWORD}@aws-0-eu-west-2.pooler.supabase.com:6543/postgres`;
+
+const client = new Client({
+    connectionString: connectionString,
+    ssl: { rejectUnauthorized: false }, // Required for Supabase
+});
+
+
+app.get("/supabase", async (req, res) => {
+    try {
+        const { data, error: tablesError } = await supabase
+            .from("users")
+            .select("*");
+
+        console.log("Connection successful:", data);
+        res.json({ data });
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).json({ error: err });
+    }
+});
+ */
 const client = new pg_1.Client({
     host: "localhost",
     port: 5432,
@@ -37,7 +65,9 @@ const client = new pg_1.Client({
 app.get("/users-shared-books", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let { limit } = req.query;
     try {
-        const data = yield client.query(`SELECT * FROM "amazon-books" where published_date >= '2015-01-01'::date order by title LIMIT $1`, [limit ? limit : 50000]);
+        const data = yield client.query(`SELECT * FROM "amazon-books" where published_date >= '2015-01-01'::date order by title LIMIT $1`, [limit ? limit : 500]
+        // [limit ? limit : 50000]
+        );
         res.json({ rowCount: data.rowCount, data: data.rows });
     }
     catch (err) {
@@ -52,7 +82,7 @@ app.get("/best-seller", (req, res) => __awaiter(void 0, void 0, void 0, function
             from "amazon-books"  
             where is_best_seller = true 
             and published_date >= '2010-01-01'::date 
-            order by stars DESC, title ASC 
+            order by stars DESC, title ASC  
             limit 50
         `;
         const data = yield client.query(query);
@@ -320,33 +350,34 @@ app.post("/get-saved-books", (req, res) => __awaiter(void 0, void 0, void 0, fun
 }));
 // Get dashboard statistics
 // ----------------------------------------------------------
-app.get("/dashboard/stats", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const stats = yield Promise.all([
-            // Total books
-            client.query('SELECT COUNT(*) FROM "amazon-books"'),
-            // Best sellers count
-            client.query('SELECT COUNT(*) FROM "amazon-books" WHERE is_best_seller = true'),
-            // Average price
-            client.query('SELECT AVG(price) FROM "amazon-books"'),
-            // Books published this year
-            client.query(`SELECT COUNT(*) FROM "amazon-books" 
-                WHERE EXTRACT(YEAR FROM published_date) = EXTRACT(YEAR FROM CURRENT_DATE)`),
-        ]);
-        res.json({
-            totalBooks: parseInt(stats[0].rows[0].count),
-            bestSellers: parseInt(stats[1].rows[0].count),
-            avgPrice: parseFloat(stats[2].rows[0].avg).toFixed(2),
-            newBooks: parseInt(stats[3].rows[0].count),
-        });
-    }
-    catch (err) {
-        res.status(500).json({
-            message: "Failed to get statistics",
-            error: err,
-        });
-    }
-}));
+// app.get("/dashboard/stats", async (req, res) => {
+//     try {
+//         const stats = await Promise.all([
+//             // Total books
+//             client.query('SELECT COUNT(*) FROM "amazon-books"'),
+//             // Best sellers count
+//             client.query(
+//                 'SELECT COUNT(*) FROM "amazon-books" WHERE is_best_seller = true'
+//             ),
+//             // Average price
+//             client.query('SELECT AVG(price) FROM "amazon-books"'),
+//             // Books published this year
+//             client.query(`SELECT COUNT(*) FROM "amazon-books"
+//                 WHERE EXTRACT(YEAR FROM published_date) = EXTRACT(YEAR FROM CURRENT_DATE)`),
+//         ]);
+//         res.json({
+//             totalBooks: parseInt(stats[0].rows[0].count),
+//             bestSellers: parseInt(stats[1].rows[0].count),
+//             avgPrice: parseFloat(stats[2].rows[0].avg).toFixed(2),
+//             newBooks: parseInt(stats[3].rows[0].count),
+//         });
+//     } catch (err) {
+//         res.status(500).json({
+//             message: "Failed to get statistics",
+//             error: err,
+//         });
+//     }
+// });
 // Get dashboard statistics
 app.get("/dashboard/stats", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
