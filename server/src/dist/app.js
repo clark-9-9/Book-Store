@@ -562,6 +562,58 @@ app.get("/dashboard/monthly-stats", (req, res) => __awaiter(void 0, void 0, void
         });
     }
 }));
+app.get("/dashboard/author", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const query = `
+            SELECT
+                DATE_TRUNC('month', published_date) as month,
+                AVG(price) as avg_price
+            FROM "amazon-books"
+            WHERE published_date IS NOT NULL
+            GROUP BY month
+            ORDER BY month DESC
+            LIMIT 12
+        `;
+        const data = yield client.query(query);
+        res.json(data.rows);
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to get price trend",
+            error: err,
+        });
+    }
+}));
+// Replace this endpoint
+app.get("/author-books/:authorName", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { authorName } = req.params;
+        const query = `
+            SELECT 
+                ab._id, 
+                ab.author,
+                ab.title, 
+                ab.stars, 
+                ab.reviews, 
+                ab.price, 
+                ab.is_best_seller,
+                u.username,
+                bc.collection_name
+            FROM "amazon-books" ab
+            LEFT JOIN saved_books sb ON ab._id = sb.book_id
+            LEFT JOIN users u ON sb.user_id = u.id
+            LEFT JOIN book_collections bc ON sb.collection_id = bc.id
+            WHERE ab.author ILIKE '%' || $1 || '%'
+            GROUP BY ab._id, ab.author, ab.title, ab.stars, ab.reviews, ab.price, ab.is_best_seller, u.username, bc.collection_name
+        `;
+        const result = yield client.query(query, [authorName]); // Changed from pool to client
+        res.json(result.rows);
+    }
+    catch (error) {
+        console.error("Error fetching author books:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}));
 // --------------------------------------------
 const port = process.env.PORT || 3000;
 function start() {

@@ -427,6 +427,7 @@ app.post("/get-saved-books", async (req, res) => {
 // });
 
 // Get dashboard statistics
+
 app.get("/dashboard/stats", async (req, res) => {
     try {
         const stats = await Promise.all([
@@ -501,7 +502,6 @@ app.get("/dashboard/price-trends", async (req, res) => {
 });
 
 // Add these new endpoints
-
 app.get("/dashboard/extended-stats", async (req, res) => {
     try {
         const stats = await Promise.all([
@@ -623,6 +623,58 @@ app.get("/dashboard/monthly-stats", async (req, res) => {
             message: "Failed to get monthly stats",
             error: err,
         });
+    }
+});
+
+app.get("/dashboard/author", async (req, res) => {
+    try {
+        const query = `
+            SELECT
+                DATE_TRUNC('month', published_date) as month,
+                AVG(price) as avg_price
+            FROM "amazon-books"
+            WHERE published_date IS NOT NULL
+            GROUP BY month
+            ORDER BY month DESC
+            LIMIT 12
+        `;
+        const data = await client.query(query);
+        res.json(data.rows);
+    } catch (err) {
+        res.status(500).json({
+            message: "Failed to get price trend",
+            error: err,
+        });
+    }
+});
+
+// Replace this endpoint
+app.get("/author-books/:authorName", async (req, res) => {
+    try {
+        const { authorName } = req.params;
+        const query = `
+            SELECT 
+                ab._id, 
+                ab.author,
+                ab.title, 
+                ab.stars, 
+                ab.reviews, 
+                ab.price, 
+                ab.is_best_seller,
+                u.username,
+                bc.collection_name
+            FROM "amazon-books" ab
+            LEFT JOIN saved_books sb ON ab._id = sb.book_id
+            LEFT JOIN users u ON sb.user_id = u.id
+            LEFT JOIN book_collections bc ON sb.collection_id = bc.id
+            WHERE ab.author ILIKE '%' || $1 || '%'
+            GROUP BY ab._id, ab.author, ab.title, ab.stars, ab.reviews, ab.price, ab.is_best_seller, u.username, bc.collection_name
+        `;
+        const result = await client.query(query, [authorName]); // Changed from pool to client
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Error fetching author books:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 

@@ -42,3 +42,14 @@ export interface AddBookToCheckedCollectionType {
     user_id: string;
     collection_id: string;
 }
+
+export interface BookWithCollection {
+    _id: string;
+    title: string;
+    stars: number;
+    reviews: number;
+    price: number;
+    is_best_seller: boolean;
+    username?: string;
+    collection_name?: string;
+}

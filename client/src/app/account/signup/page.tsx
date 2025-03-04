@@ -58,7 +58,7 @@ export default function Signup() {
                         required
                     />
 
-                    <label htmlFor="email">Username</label>
+                    <label htmlFor="email">Email</label>
                     <input
                         type="email"
                         id="email"

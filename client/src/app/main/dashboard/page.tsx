@@ -16,6 +16,16 @@ import {
     ScatterController,
 } from "chart.js";
 import { Line, Pie, Bar, Scatter } from "react-chartjs-2";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+} from "@mui/material";
+import MultipleSelectCheckmarks from "./authorOptions";
 
 // Register ChartJS components
 ChartJS.register(
@@ -85,6 +95,18 @@ interface DashboardStats {
     editorsPicks: number;
 }
 
+interface AuthorBook {
+    _id: string;
+    author: string; // Added this field
+    title: string;
+    stars: number;
+    reviews: number;
+    price: number;
+    is_best_seller: boolean;
+    username?: string;
+    collection_name?: string;
+}
+
 // Helper function to generate color scale
 function generateColorScale(
     steps: number,
@@ -134,6 +156,9 @@ export default function DashboardPage() {
         BookDistribution[]
     >([]);
     const [monthlyStats, setMonthlyStats] = useState<MonthlyStats[]>([]);
+    const [selectedAuthor, setSelectedAuthor] = useState<string[]>([]);
+    const [authorBooks, setAuthorBooks] = useState<AuthorBook[]>([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         Promise.all([
@@ -168,6 +193,25 @@ export default function DashboardPage() {
             }
         );
     }, []);
+
+    useEffect(() => {
+        if (selectedAuthor.length > 0) {
+            setLoading(true);
+            // Fetch books for the selected author
+            fetch(
+                `http://localhost:8080/author-books/${encodeURIComponent(selectedAuthor[0])}`
+            )
+                .then((res) => res.json())
+                .then((data) => {
+                    setAuthorBooks(data);
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    console.error(err);
+                    setLoading(false);
+                });
+        }
+    }, [selectedAuthor]);
 
     // Chart Data Configurations
     const pieChartData = {
@@ -291,6 +335,57 @@ export default function DashboardPage() {
             borderColor: generateColorScale(4)[index],
             tension: 0.4,
         })),
+    };
+
+    const AuthorBooksTable = () => (
+        <TableContainer component={Paper} sx={{ backgroundColor: "#14121F" }}>
+            <Table
+                sx={{
+                    minWidth: 650,
+                    "& .MuiTableCell-root": { color: "white" },
+                }}
+            >
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Author</TableCell>
+                        <TableCell>Title</TableCell>
+                        <TableCell align="right">Rating</TableCell>
+                        <TableCell align="right">Reviews</TableCell>
+                        <TableCell align="right">Price</TableCell>
+                        <TableCell align="center">Best Seller</TableCell>
+                        <TableCell>Saved By</TableCell>
+                        <TableCell>Collection</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {authorBooks.map((book, index) => (
+                        <TableRow
+                            key={`${book._id}-${book.username || "none"}-${book.collection_name || "none"}-${index}`}
+                        >
+                            <TableCell component="th" scope="row">
+                                {book.author}
+                            </TableCell>
+                            <TableCell component="th" scope="row">
+                                {book.title}
+                            </TableCell>
+                            <TableCell align="right">{book.stars}</TableCell>
+                            <TableCell align="right">{book.reviews}</TableCell>
+                            <TableCell align="right">${book.price}</TableCell>
+                            <TableCell align="center">
+                                {book.is_best_seller ? "✓" : "-"}
+                            </TableCell>
+                            <TableCell>{book.username || "-"}</TableCell>
+                            <TableCell>{book.collection_name || "-"}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
+    );
+
+    // Modify authorOptions.tsx to accept props
+    const handleAuthorSelect = (authors: string[]) => {
+        setSelectedAuthor(authors);
     };
 
     return (
@@ -547,6 +642,26 @@ export default function DashboardPage() {
                         },
                     }}
                 />
+            </Card>
+
+            {/* Authors Tables */}
+            <Card className="min-h-[400px] border-none bg-[#2a2a2a] text-white">
+                <div className="mb-4">
+                    <h3 className="mb-4 font-semibold">Authors Books</h3>
+                    <MultipleSelectCheckmarks
+                        value={selectedAuthor}
+                        onChange={(authors: string[]) =>
+                            setSelectedAuthor(authors)
+                        }
+                    />
+                </div>
+                {loading ? (
+                    <div>Loading...</div>
+                ) : selectedAuthor.length > 0 ? (
+                    <AuthorBooksTable />
+                ) : (
+                    <div>Please select an author to view their books</div>
+                )}
             </Card>
         </div>
     );
